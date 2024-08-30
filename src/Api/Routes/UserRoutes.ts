@@ -30,11 +30,12 @@ userRouter.post("/signup", async (req, res) => {
 
     res.status(201).json({
       message: "User created successfully",
-      user: {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-      },
+    });
+
+    res.cookie("token", { userid: user.id });
+
+    res.status(201).json({
+      message: "User created successfully",
     });
   } catch (error) {
     return res.json({
@@ -43,11 +44,36 @@ userRouter.post("/signup", async (req, res) => {
   }
 });
 
-userRouter.post("/signin", (req, res) => {
+userRouter.post("/signin", async(req, res) => {
   const { username, password } = req.body;
 
-  return res.json({
-    msg: username,
-  });
+  const user = signin_schema.safeParse({
+    username,
+    password
+
+  })
+
+  if (!user.success) {
+    return res.json({
+      error: user.error,
+    });
+  }
+
+  const response = await prisma.user.findUnique({
+    "where":{
+      username,
+      password
+    }
+  })
+
+
+
+ res.cookie("token",{"userId": response?.id})
+
+ return res.json({
+  "msg": "logged in as " + response?.username
+ })
+
+
 });
 export default userRouter;

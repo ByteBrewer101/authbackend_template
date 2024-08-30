@@ -38,11 +38,10 @@ userRouter.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, funct
         });
         res.status(201).json({
             message: "User created successfully",
-            user: {
-                id: user.id,
-                email: user.email,
-                username: user.username,
-            },
+        });
+        res.cookie("token", { userid: user.id });
+        res.status(201).json({
+            message: "User created successfully",
         });
     }
     catch (error) {
@@ -51,10 +50,26 @@ userRouter.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, funct
         });
     }
 }));
-userRouter.post("/signin", (req, res) => {
+userRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, password } = req.body;
-    return res.json({
-        msg: username,
+    const user = ZodSchemas_1.signin_schema.safeParse({
+        username,
+        password
     });
-});
+    if (!user.success) {
+        return res.json({
+            error: user.error,
+        });
+    }
+    const response = yield PrismaClient_1.default.user.findUnique({
+        "where": {
+            username,
+            password
+        }
+    });
+    res.cookie("token", { "userId": response === null || response === void 0 ? void 0 : response.id });
+    return res.json({
+        "msg": "logged in as " + (response === null || response === void 0 ? void 0 : response.username)
+    });
+}));
 exports.default = userRouter;
