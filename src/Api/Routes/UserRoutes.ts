@@ -15,7 +15,7 @@ userRouter.post("/signup", async (req, res) => {
     });
 
     if (!val_user.success) {
-      return res.json({
+      return res.status(400).json({
         error: val_user.error,
       });
     }
@@ -28,21 +28,20 @@ userRouter.post("/signup", async (req, res) => {
       },
     });
 
-    res.status(201).json({
-      message: "User created successfully",
-    });
+    // Set cookie before sending response
+    res.cookie("token", user.id);
 
-    res.cookie("token", { userid: user.id });
-
-    res.status(201).json({
+    // Send response
+    return res.status(201).json({
       message: "User created successfully",
     });
   } catch (error) {
-    return res.json({
+    return res.status(500).json({
       err: error,
     });
   }
 });
+
 
 userRouter.post("/signin", async(req, res) => {
   const { username, password } = req.body;

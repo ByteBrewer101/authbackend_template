@@ -25,7 +25,7 @@ userRouter.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, funct
             password,
         });
         if (!val_user.success) {
-            return res.json({
+            return res.status(400).json({
                 error: val_user.error,
             });
         }
@@ -36,16 +36,15 @@ userRouter.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, funct
                 password,
             },
         });
-        res.status(201).json({
-            message: "User created successfully",
-        });
-        res.cookie("token", { userid: user.id });
-        res.status(201).json({
+        // Set cookie before sending response
+        res.cookie("token", user.id);
+        // Send response
+        return res.status(201).json({
             message: "User created successfully",
         });
     }
     catch (error) {
-        return res.json({
+        return res.status(500).json({
             err: error,
         });
     }
