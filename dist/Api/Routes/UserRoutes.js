@@ -14,10 +14,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const PrismaClient_1 = __importDefault(require("../PrismaClient"));
+const ZodSchemas_1 = require("../InputSchemas/ZodSchemas");
 const userRouter = express_1.default.Router();
 userRouter.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, username, password } = req.body;
     try {
+        const val_user = ZodSchemas_1.signup_schema.safeParse({
+            email,
+            username,
+            password,
+        });
+        if (!val_user.success) {
+            return res.json({
+                error: val_user.error,
+            });
+        }
         const user = yield PrismaClient_1.default.user.create({
             data: {
                 email,
@@ -36,14 +47,14 @@ userRouter.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
     catch (error) {
         return res.json({
-            "err": error
+            err: error,
         });
     }
 }));
 userRouter.post("/signin", (req, res) => {
     const { username, password } = req.body;
     return res.json({
-        "msg": username
+        msg: username,
     });
 });
 exports.default = userRouter;
