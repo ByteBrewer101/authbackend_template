@@ -28,15 +28,14 @@ userRouter.post("/signup", async (req, res) => {
       },
     });
 
-    // Set cookie before sending response
+    
     res.cookie("token", user.id);
 
-    // Send response
-    return res.status(201).json({
+    return res.status(200).json({
       message: "User created successfully",
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(401).json({
       err: error,
     });
   }
@@ -45,7 +44,8 @@ userRouter.post("/signup", async (req, res) => {
 
 userRouter.post("/signin", async(req, res) => {
   const { username, password } = req.body;
-
+  try
+{
   const user = signin_schema.safeParse({
     username,
     password
@@ -53,7 +53,7 @@ userRouter.post("/signin", async(req, res) => {
   })
 
   if (!user.success) {
-    return res.json({
+    return res.status(401).json({
       error: user.error,
     });
   }
@@ -64,15 +64,28 @@ userRouter.post("/signin", async(req, res) => {
       password
     }
   })
+if(response)
+{
+   res.cookie("token", { userId: response?.id });
+
+   return res.status(200).json({
+     msg: "logged in as " + response.username,
+   });
+
+}
+
+return res.status(401).json({
+  "err": "error logging in"
+})
 
 
 
- res.cookie("token",{"userId": response?.id})
 
- return res.json({
-  "msg": "logged in as " + response?.username
- })
-
+}catch(e){
+  return res.status(401).json({
+    "err":e
+  })
+}
 
 });
 export default userRouter;

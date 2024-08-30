@@ -36,39 +36,49 @@ userRouter.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, funct
                 password,
             },
         });
-        // Set cookie before sending response
         res.cookie("token", user.id);
-        // Send response
-        return res.status(201).json({
+        return res.status(200).json({
             message: "User created successfully",
         });
     }
     catch (error) {
-        return res.status(500).json({
+        return res.status(401).json({
             err: error,
         });
     }
 }));
 userRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, password } = req.body;
-    const user = ZodSchemas_1.signin_schema.safeParse({
-        username,
-        password
-    });
-    if (!user.success) {
-        return res.json({
-            error: user.error,
-        });
-    }
-    const response = yield PrismaClient_1.default.user.findUnique({
-        "where": {
+    try {
+        const user = ZodSchemas_1.signin_schema.safeParse({
             username,
             password
+        });
+        if (!user.success) {
+            return res.status(401).json({
+                error: user.error,
+            });
         }
-    });
-    res.cookie("token", { "userId": response === null || response === void 0 ? void 0 : response.id });
-    return res.json({
-        "msg": "logged in as " + (response === null || response === void 0 ? void 0 : response.username)
-    });
+        const response = yield PrismaClient_1.default.user.findUnique({
+            "where": {
+                username,
+                password
+            }
+        });
+        if (response) {
+            res.cookie("token", { userId: response === null || response === void 0 ? void 0 : response.id });
+            return res.status(200).json({
+                msg: "logged in as " + response.username,
+            });
+        }
+        return res.status(401).json({
+            "err": "error logging in"
+        });
+    }
+    catch (e) {
+        return res.status(401).json({
+            "err": e
+        });
+    }
 }));
 exports.default = userRouter;
